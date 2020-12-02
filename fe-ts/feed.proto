@@ -1,0 +1,172 @@
+syntax = "proto2";
+
+
+package feed;
+
+
+//////////////////////////////////
+//                              //
+//      ENUMERATED TYPES        //
+//                              //
+//////////////////////////////////
+
+enum side_enum
+{
+    none  = 0;
+    buy   = 1;
+    sell  = 2;
+}
+
+
+enum update_type
+{
+    snapshot    = 1;
+    variations  = 2;
+}
+
+
+enum svc_status
+{
+    online  = 0;
+    offline = 1;
+    broken  = 2;
+}
+
+
+enum trading_status_enum
+{
+    open_delay          = 1;
+    trad_halt           = 2;
+    resume              = 3;
+    no_open             = 4;
+    price_indication    = 5;
+    trad_rng_ind        = 6;
+    mkt_imb_buy         = 7;
+    mkt_imb_sell        = 8;
+    moc_imb_buy         = 9;
+    moc_imb_sell        = 10;
+    not_assigned        = 11;
+    no_mkt_imb          = 12;
+    no_moc_imb          = 13;
+    its_pre_op          = 14;
+    new_prIce_ind       = 15;
+    trad_diss_time      = 16;
+    trading             = 17;
+    trading_halt        = 18;
+    not_traded          = 19;
+    unknown             = 20;
+    suspended           = 99;
+}
+
+
+//////////////////////////////////
+//                              //
+//             SIGMAS           //
+//                              //
+//////////////////////////////////
+
+message security_trade
+{
+    optional uint64 unique_id         = 1;
+    required double price             = 2;
+    optional double size              = 3;
+    optional bool   cross_order_flag  = 4;
+    optional string trade_ts          = 5;
+}    
+
+
+message security_order_depth_elem
+{
+    required side_enum side         = 1;
+    required uint32    level        = 2;
+    optional double    price        = 3;
+    optional double    display_size = 4;
+    optional string    user_code    = 5;
+}
+
+
+message security_ref_price
+{
+    optional double reference_price = 1;
+    optional double dynamic_price   = 2;
+    optional string reference_ts    = 3;
+}
+
+
+message security_status
+{
+    required string               trading_session_id = 1;
+    optional trading_status_enum  trading_status     = 2;
+    optional string               reopen_time        = 3;
+    optional string               status_ts          = 4;
+}
+
+
+message security_volume
+{
+    required double cumulative_size     = 1;
+    optional double cumulative_amount   = 2;
+    optional uint32 no_executed_trades  = 3;
+    optional double average_price       = 4;
+    optional string volume_ts           = 5;
+}
+
+
+//////////////////////////////////
+//                              //
+//    FEED INTERFACE HANDLERS   //
+//                              //
+//////////////////////////////////
+
+message update_payload
+{
+    optional security_order_depth_elem  order       = 1;
+    optional security_trade             trade       = 2;
+    optional security_ref_price         ref_price   = 3;
+    optional security_status            status      = 4;
+    optional security_volume            volume      = 5;
+}
+
+message update_snapshot
+{
+    optional update_type    update_type = 1;
+    required string         service     = 2;
+    required string         key         = 3;
+    optional update_payload sigmas      = 4;
+    // required cross_times    xt       = 5;
+}
+
+message update_ticker
+{
+    required uint64         subscription_id = 1;
+    required update_type    update_type     = 2;
+    required string         service         = 3;
+    required int64          sequence        = 4;
+    required string         key             = 5;
+    optional update_payload sigmas          = 6;
+    // required cross_times      xt = 6;
+}
+
+message service_status
+{
+    required string     service = 1;
+    required svc_status status  = 2;
+    required string     details = 3;
+}
+
+
+//////////////////////////////////
+//                              //
+//      FEED API INTERFACE      //
+//                              //
+//////////////////////////////////
+
+message feed_event
+{
+    oneof event_type
+    {
+        update_snapshot snapshot = 1;
+        update_ticker   ticker   = 2;
+        service_status  status   = 3;
+    }
+}
