@@ -29,7 +29,6 @@ function App() {
         data.arrayBuffer().then((buffer) => {
           const bytes = new Uint8Array(buffer)
           const data = evt.deserializeBinary(bytes)
-          console.log(true, evt.toObject(true, data))
           console.log(false, evt.toObject(false, data))
         })
 
